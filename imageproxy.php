@@ -34,13 +34,22 @@ class imageproxy extends rcube_plugin
             if (!$rcube->config->get('imageproxy_url', false)) {
                 return $args;
             }
-
-	    preg_match_all('@src="http([^"]+)"@', $args['body'], $imagesUrl);
+	    //Check for http OR https images
+	    preg_match_all('@src="(http|https)([^"]+)"@', $args['body'], $imagesUrl);
 	    $srcurl = array_pop($imagesUrl);
 	    foreach($srcurl as $imgurl){
-		$newpath = $this->image_proxy_path("http".$imgurl);
-		error_log($newpath);
-		$args["body"] = str_replace("http".$imgurl,$newpath,$args["body"]);
+		if(strpos($imgurl, "s://") === 0)
+		{
+			$newpath = $this->image_proxy_path("https".$imgurl);
+			error_log($newpath);
+			$args["body"] = str_replace("https".$imgurl,$newpath,$args["body"]);
+		}
+		else
+		{
+			$newpath = $this->image_proxy_path("http".$imgurl);
+			error_log($newpath);
+			$args["body"] = str_replace("http".$imgurl,$newpath,$args["body"]);
+		}
 	    }
         }
         return $args;
